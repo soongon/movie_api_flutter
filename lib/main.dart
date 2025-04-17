@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:movie_api_flutter/screens/movie_main_screen.dart';
 
 void main() {
   runApp(const MovieApp());
@@ -15,7 +16,7 @@ class MovieApp extends StatelessWidget {
       theme: ThemeData(
         colorScheme: ColorScheme.fromSeed(seedColor: Colors.deepPurple),
       ),
-      home: Placeholder(),
+      home: MovieMainScreen(),
     );
   }
 }
