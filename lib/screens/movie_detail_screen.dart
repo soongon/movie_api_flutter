@@ -1,18 +1,39 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_hooks/flutter_hooks.dart';
+import 'package:movie_api_flutter/services/movie_api_service.dart';
+import 'package:movie_api_flutter/widgets/shimmer_detail_card.dart';
 import '../models/movie_detail.dart';
 
-class MovieDetailScreen extends StatelessWidget {
-  final MovieDetail movie;
+class MovieDetailScreen extends HookWidget {
+  final int movieId;
 
-  const MovieDetailScreen({super.key, required this.movie});
+  const MovieDetailScreen({super.key, required this.movieId});
 
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
 
+    final movieDetail = useState<MovieDetail?>(null);
+
+    useEffect(() {
+      Future(() async {
+        final detail = await MovieApiService.fetchMovieDetail(movieId);
+        movieDetail.value = detail;
+      });
+      return null;
+    }, []);
+
+    if (movieDetail.value == null) {
+      return const Scaffold(
+        body: SafeArea(child: ShimmerDetailCard()),
+      );
+    }
+
+    final m = movieDetail.value!;
+
     return Scaffold(
       appBar: AppBar(
-        title: Text(movie.title),
+        title: Text(m.title),
         backgroundColor: theme.colorScheme.primary,
         foregroundColor: theme.colorScheme.onPrimary,
       ),
@@ -25,8 +46,8 @@ class MovieDetailScreen extends StatelessWidget {
             ClipRRect(
               borderRadius: BorderRadius.circular(12),
               child: Image.network(
-                movie.posterPath != null
-                    ? 'https://image.tmdb.org/t/p/w500${movie.posterPath}'
+                m.posterPath != null
+                    ? 'https://image.tmdb.org/t/p/w500${m.posterPath}'
                     : 'https://via.placeholder.com/500x750?text=No+Image',
                 height: 240,
                 width: double.infinity,
@@ -37,7 +58,7 @@ class MovieDetailScreen extends StatelessWidget {
 
             // 📝 제목
             Text(
-              movie.title,
+              m.title,
               style: theme.textTheme.headlineSmall?.copyWith(
                 fontWeight: FontWeight.bold,
               ),
@@ -50,7 +71,7 @@ class MovieDetailScreen extends StatelessWidget {
                 Icon(Icons.event, size: 18, color: theme.colorScheme.onSurfaceVariant),
                 const SizedBox(width: 4),
                 Text(
-                  movie.releaseDate,
+                  m.releaseDate,
                   style: theme.textTheme.bodyMedium?.copyWith(
                     color: theme.colorScheme.onSurfaceVariant,
                   ),
@@ -59,7 +80,7 @@ class MovieDetailScreen extends StatelessWidget {
                 Icon(Icons.schedule, size: 18, color: theme.colorScheme.onSurfaceVariant),
                 const SizedBox(width: 4),
                 Text(
-                  '${movie.runtime}분',
+                  '${m.runtime}분',
                   style: theme.textTheme.bodyMedium?.copyWith(
                     color: theme.colorScheme.onSurfaceVariant,
                   ),
@@ -73,17 +94,17 @@ class MovieDetailScreen extends StatelessWidget {
               children: [
                 Icon(Icons.star_rate_rounded, color: Colors.amber),
                 const SizedBox(width: 4),
-                Text('${movie.voteAverage} / 10'),
+                Text('${m.voteAverage} / 10'),
               ],
             ),
             const SizedBox(height: 16),
 
             // 🎭 장르
-            if (movie.genres.isNotEmpty)
+            if (m.genres.isNotEmpty)
               Wrap(
                 spacing: 8,
                 runSpacing: 4,
-                children: movie.genres
+                children: m.genres
                     .map((genre) => Chip(
                           label: Text(genre),
                           visualDensity: VisualDensity.compact,
@@ -94,24 +115,24 @@ class MovieDetailScreen extends StatelessWidget {
             const SizedBox(height: 24),
 
             // 📖 줄거리
-            if (movie.overview.isNotEmpty) ...[
+            if (m.overview.isNotEmpty) ...[
               Text('줄거리', style: theme.textTheme.titleMedium),
               const SizedBox(height: 8),
               Text(
-                movie.overview,
+                m.overview,
                 style: theme.textTheme.bodyLarge,
               ),
               const SizedBox(height: 24),
             ],
 
             // 🏢 제작사 정보
-            if (movie.productionCompanies.isNotEmpty) ...[
+            if (m.productionCompanies.isNotEmpty) ...[
               Text('제작사', style: theme.textTheme.titleMedium),
               const SizedBox(height: 8),
               Wrap(
                 spacing: 8,
                 runSpacing: 4,
-                children: movie.productionCompanies
+                children: m.productionCompanies
                     .map((company) => Chip(
                           label: Text(company),
                           visualDensity: VisualDensity.compact,

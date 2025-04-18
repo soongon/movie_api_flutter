@@ -1,10 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:movie_api_flutter/screens/movie_detail_screen.dart';
-import 'package:movie_api_flutter/services/movie_api_service.dart';
 import 'package:movie_api_flutter/viewmodels/movie_state.dart';
 import 'package:movie_api_flutter/widgets/movie_card.dart';
 import 'package:movie_api_flutter/widgets/movie_menu_item.dart';
+import 'package:movie_api_flutter/widgets/shimmer_card.dart';
 
 import '../providers/movie_provider.dart';
 import '../widgets/movie_search_bar.dart';
@@ -54,7 +54,13 @@ class MovieMainScreen extends ConsumerWidget {
           MovieSearchBar(),
 
           if (state.isLoading)
-            Expanded(child: Center(child: CircularProgressIndicator(),))
+            Expanded(
+              child: ListView.builder(
+                padding: EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                itemCount: 6,
+                itemBuilder: (context, index) => const ShimmerCard(),
+              ),
+            )
           else
             // 🎞️ 영화 목록 카드 뷰
             Expanded(
@@ -64,15 +70,10 @@ class MovieMainScreen extends ConsumerWidget {
                 itemBuilder: (context, index) {
                   return MovieCard(
                     movie: state.movies[index],
-                    onTap: () async {
-                      final detail = await MovieApiService.fetchMovieDetail(state.movies[index].id);
-                      // ✅ context가 여전히 유효한지 확인한 뒤 화면 전환
-                      if (!context.mounted) return;
-                      // 👉 상세 페이지로 이동
+                    onTap: () {
                       Navigator.of(context).push(
                         MaterialPageRoute(
-                          builder: (context) =>
-                              MovieDetailScreen(movie: detail,),
+                          builder: (context) => MovieDetailScreen(movieId: state.movies[index].id),
                         ),
                       );
                     },
