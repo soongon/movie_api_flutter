@@ -13,16 +13,29 @@ class MovieMainScreen extends HookWidget {
 
   @override
   Widget build(BuildContext context) {
-    // 🍿 메뉴 항목: 카테고리별 영화 구분
-    final menuItems = ['현재 상영중', '인기', '최신', '최고평점', '개봉예정'];
+    // 🍿 영화 목록 카테고리
+    final menuItems = ['현재 상영중', '인기', '최고평점', '개봉예정'];
 
-    // 📌 선택된 메뉴 상태값 (Hook 상태 사용)
+    // ✅ 현재 선택된 메뉴 인덱스
     final selectedIndex = useState(0);
 
-    // 🌐 TMDB API에서 현재 상영 중 영화 데이터를 가져오기 위한 Future 생성
-    final future = useMemoized(() => MovieApiService.fetchNowPlayingMovies());
+    // 🌐 선택된 카테고리에 따라 TMDB API 호출 (메모이즈 처리)
+    final future = useMemoized(() {
+      switch (selectedIndex.value) {
+        case 0:
+          return MovieApiService.fetchNowPlayingMovies();
+        case 1:
+          return MovieApiService.fetchPopularMovies();
+        case 2:
+          return MovieApiService.fetchTopRatedMovies();
+        case 3:
+          return MovieApiService.fetchUpcomingMovies();
+        default:
+          return MovieApiService.fetchNowPlayingMovies();
+      }
+    }, [selectedIndex.value]);
 
-    // ⏳ Future 상태 추적 (로딩 중 / 완료 / 에러 등)
+    // ⏳ Future 상태 추적 (로딩, 완료, 에러)
     final snapshot = useFuture(future);
 
     // ⏱️ 데이터 로딩 중이면 로딩 인디케이터 표시
@@ -80,12 +93,15 @@ class MovieMainScreen extends HookWidget {
               itemBuilder: (context, index) {
                 return MovieCard(
                   movie: movies[index],
-                  onTap: () {
+                  onTap: () async {
+                    final detail = await MovieApiService.fetchMovieDetail(movies[index].id);
+                    // ✅ context가 여전히 유효한지 확인한 뒤 화면 전환
+                    if (!context.mounted) return;
                     // 👉 상세 페이지로 이동
                     Navigator.of(context).push(
                       MaterialPageRoute(
                         builder: (context) =>
-                            MovieDetailScreen(movie: movies[index],),
+                            MovieDetailScreen(movie: detail,),
                       ),
                     );
                   },
