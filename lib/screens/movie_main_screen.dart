@@ -65,9 +65,17 @@ class MovieMainScreen extends ConsumerWidget {
                 itemBuilder: (context, index) => const ShimmerCard(),
               ),
             )
+          else if (state.errorMessage != null)
+            Expanded(
+              child: Center(
+                child: Text(
+                  state.errorMessage!,
+                  style: TextStyle(color: Colors.red, fontSize: 16),
+                  textAlign: TextAlign.center,
+                ),
+              ),
+            )
           else
-            // 📌 검색어가 비어 있으면 카테고리별 영화 목록, 있으면 검색 결과 목록을 보여줌
-            // 🎞️ 영화 목록 카드 뷰 (카테고리 또는 검색 결과에 따라 변경됨)
             Expanded(
               child: ListView.separated(
                 padding: EdgeInsets.symmetric(horizontal: 16, vertical: 8,),

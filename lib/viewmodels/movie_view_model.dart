@@ -25,7 +25,7 @@ class MovieViewModel extends StateNotifier<MovieState> {
 
   /// 🔍 검색어가 변경될 때마다 TMDB API 호출
   Future<void> updateSearchQuery(String query) async {
-    state = state.copyWith(searchQuery: query, isSearching: true);
+    state = state.copyWith(searchQuery: query, isSearching: true, errorMessage: null,);
 
     if (query.isEmpty) {
       state = state.copyWith(searchResults: [], isSearching: false);
@@ -36,13 +36,17 @@ class MovieViewModel extends StateNotifier<MovieState> {
       final results = await MovieApiService.searchMovies(query);
       state = state.copyWith(searchResults: results, isSearching: false);
     } catch (e) {
-      state = state.copyWith(searchResults: [], isSearching: false);
+      state = state.copyWith(
+        searchResults: [],
+        isSearching: false,
+        errorMessage: '검색 중 오류가 발생했습니다 ❗',
+      );
     }
   }
 
   /// 🎥 선택된 카테고리에 따른 영화 목록 요청
   Future<void> loadMovies() async {
-    state = state.copyWith(isLoading: true);
+    state = state.copyWith(isLoading: true, errorMessage: null);
 
     try {
       List<Movie> movies;
@@ -65,8 +69,11 @@ class MovieViewModel extends StateNotifier<MovieState> {
 
       state = state.copyWith(movies: movies);
     } catch (e) {
-      // 에러 핸들링 추가 가능
-      state = state.copyWith(movies: []);
+      // 🛑 에러 발생 시: 영화 목록 비우고 에러 메시지 저장
+      state = state.copyWith(
+        movies: [],
+        errorMessage: '영화를 불러오는 중 오류가 발생했습니다 😥',
+      );
     } finally {
       state = state.copyWith(isLoading: false);
     }
