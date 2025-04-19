@@ -10,9 +10,34 @@ class MovieViewModel extends StateNotifier<MovieState> {
   }
 
   /// 🔁 카테고리 변경 시 상태 갱신 및 데이터 다시 로드
+  /// 카테고리를 변경할 때 searchQuery를 초기화하지 않으면 검색 상태가 고정되므로,
+  /// 이 코드 추가도 필요합니다 👇
   void changeCategory(int index) {
-    state = state.copyWith(selectedIndex: index);
+    state = state.copyWith(
+      selectedIndex: index,
+      searchQuery: '',
+      isSearching: false,
+      searchResults: [],
+      isLoading: true,
+    );
     loadMovies();
+  }
+
+  /// 🔍 검색어가 변경될 때마다 TMDB API 호출
+  Future<void> updateSearchQuery(String query) async {
+    state = state.copyWith(searchQuery: query, isSearching: true);
+
+    if (query.isEmpty) {
+      state = state.copyWith(searchResults: [], isSearching: false);
+      return;
+    }
+
+    try {
+      final results = await MovieApiService.searchMovies(query);
+      state = state.copyWith(searchResults: results, isSearching: false);
+    } catch (e) {
+      state = state.copyWith(searchResults: [], isSearching: false);
+    }
   }
 
   /// 🎥 선택된 카테고리에 따른 영화 목록 요청

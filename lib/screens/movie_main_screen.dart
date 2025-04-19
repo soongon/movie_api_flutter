@@ -21,6 +21,10 @@ class MovieMainScreen extends ConsumerWidget {
     final MovieState state = ref.watch(movieProvider);
     final vm = ref.read(movieProvider.notifier);
 
+    final listToShow = state.searchQuery.isNotEmpty
+        ? state.searchResults
+        : state.movies;
+
     return Scaffold(
       appBar: AppBar(
         title: Text('영화 앱'),
@@ -62,18 +66,19 @@ class MovieMainScreen extends ConsumerWidget {
               ),
             )
           else
-            // 🎞️ 영화 목록 카드 뷰
+            // 📌 검색어가 비어 있으면 카테고리별 영화 목록, 있으면 검색 결과 목록을 보여줌
+            // 🎞️ 영화 목록 카드 뷰 (카테고리 또는 검색 결과에 따라 변경됨)
             Expanded(
               child: ListView.separated(
                 padding: EdgeInsets.symmetric(horizontal: 16, vertical: 8,),
-                itemCount: state.movies.length,
+                itemCount: listToShow.length,
                 itemBuilder: (context, index) {
                   return MovieCard(
-                    movie: state.movies[index],
+                    movie: listToShow[index],
                     onTap: () {
                       Navigator.of(context).push(
                         MaterialPageRoute(
-                          builder: (context) => MovieDetailScreen(movieId: state.movies[index].id),
+                          builder: (context) => MovieDetailScreen(movieId: listToShow[index].id),
                         ),
                       );
                     },

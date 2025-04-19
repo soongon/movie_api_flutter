@@ -113,4 +113,27 @@ class MovieApiService {
       throw Exception('영화 상세 정보를 불러오는 데 실패했습니다: ${response.statusCode}');
     }
   }
+
+  // 🔍 영화 검색 기능 (query 기반)
+  static Future<List<Movie>> searchMovies(String query) async {
+    final encodedQuery = Uri.encodeQueryComponent(query);
+    final url = Uri.parse('$_baseUrl/search/movie?query=$encodedQuery&include_adult=false&language=ko-KR&page=1');
+
+    final response = await http.get(
+        url,
+        headers: {
+          'Authorization': 'Bearer $_accessToken',
+          'accept': 'application/json',
+        }
+    );
+  print('[검색 응답] ${response.statusCode} - ${response.body}');
+
+    if (response.statusCode == 200) {
+      final jsonData = json.decode(response.body);
+      final List<dynamic> results = jsonData['results'];
+      return results.map((item) => Movie.fromJson(item)).toList();
+    } else {
+      throw Exception('영화 검색에 실패했습니다: ${response.statusCode}');
+    }
+  }
 }

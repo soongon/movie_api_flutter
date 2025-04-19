@@ -1,10 +1,12 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:movie_api_flutter/providers/movie_provider.dart';
 
-class MovieSearchBar extends StatelessWidget {
+class MovieSearchBar extends ConsumerWidget {
   const MovieSearchBar({super.key});
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 0),
       child: SizedBox(
@@ -18,6 +20,9 @@ class MovieSearchBar extends StatelessWidget {
             ),
             filled: true,
           ),
+          onChanged: (query) {
+            ref.read(movieProvider.notifier).updateSearchQuery(query);
+          },
         ),
       ),
     );
