@@ -48,24 +48,16 @@ class MovieViewModel extends StateNotifier<MovieState> {
   Future<void> loadMovies() async {
     state = state.copyWith(isLoading: true, errorMessage: null);
 
+    final categoryMap = {
+      0: 'now_playing',
+      1: 'popular',
+      2: 'top_rated',
+      3: 'upcoming',
+    };
+    final selectedCategory = categoryMap[state.selectedIndex] ?? categoryMap[0] ?? 'now_playing';
     try {
-      List<Movie> movies;
-      switch (state.selectedIndex) {
-        case 0:
-          movies = await MovieApiService.fetchNowPlayingMovies();
-          break;
-        case 1:
-          movies = await MovieApiService.fetchPopularMovies();
-          break;
-        case 2:
-          movies = await MovieApiService.fetchTopRatedMovies();
-          break;
-        case 3:
-          movies = await MovieApiService.fetchUpcomingMovies();
-          break;
-        default:
-          movies = [];
-      }
+      final List<Movie> movies =
+          await MovieApiService.fetchMoviesByCategory(selectedCategory, 1);
 
       state = state.copyWith(movies: movies);
     } catch (e) {
@@ -76,6 +68,40 @@ class MovieViewModel extends StateNotifier<MovieState> {
       );
     } finally {
       state = state.copyWith(isLoading: false);
+    }
+  }
+
+  /// 📥 스크롤 하단 도달 시 다음 페이지 불러오기
+  Future<void> fetchNextPage() async {
+    if (state.isFetchingMore || !state.hasNextPage || state.isSearching) return;
+
+    state = state.copyWith(isFetchingMore: true, errorMessage: null);
+
+    final categoryMap = {
+      0: 'now_playing',
+      1: 'popular',
+      2: 'top_rated',
+      3: 'upcoming',
+    };
+    final selectedCategory = categoryMap[state.selectedIndex] ?? 'now_playing';
+
+    final nextPage = state.currentPage + 1;
+
+    try {
+      final List<Movie> nextMovies = await
+          MovieApiService.fetchMoviesByCategory(selectedCategory, nextPage);
+
+      final updatedList = [...state.movies, ...nextMovies];
+
+      state = state.copyWith(
+        movies: updatedList,
+        currentPage: nextPage,
+        hasNextPage: nextMovies.isNotEmpty,
+      );
+    } catch (e) {
+      state = state.copyWith(errorMessage: '다음 페이지 로드 중 오류 발생 😢');
+    } finally {
+      state = state.copyWith(isFetchingMore: false);
     }
   }
 }

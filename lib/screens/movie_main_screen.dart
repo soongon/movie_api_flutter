@@ -25,6 +25,15 @@ class MovieMainScreen extends ConsumerWidget {
         ? state.searchResults
         : state.movies;
 
+    final scrollController = ScrollController();
+
+    scrollController.addListener(() {
+      if (scrollController.position.pixels >=
+          scrollController.position.maxScrollExtent * 0.9) {
+        vm.fetchNextPage();
+      }
+    });
+
     return Scaffold(
       appBar: AppBar(
         title: Text('영화 앱'),
@@ -78,19 +87,27 @@ class MovieMainScreen extends ConsumerWidget {
           else
             Expanded(
               child: ListView.separated(
+                controller: scrollController,
                 padding: EdgeInsets.symmetric(horizontal: 16, vertical: 8,),
-                itemCount: listToShow.length,
+                itemCount: listToShow.length + (state.isFetchingMore ? 1 : 0),
                 itemBuilder: (context, index) {
-                  return MovieCard(
-                    movie: listToShow[index],
-                    onTap: () {
-                      Navigator.of(context).push(
-                        MaterialPageRoute(
-                          builder: (context) => MovieDetailScreen(movieId: listToShow[index].id),
-                        ),
-                      );
-                    },
-                  );
+                  if (index < listToShow.length) {
+                    return MovieCard(
+                      movie: listToShow[index],
+                      onTap: () {
+                        Navigator.of(context).push(
+                          MaterialPageRoute(
+                            builder: (context) => MovieDetailScreen(movieId: listToShow[index].id),
+                          ),
+                        );
+                      },
+                    );
+                  } else {
+                    return Padding(
+                      padding: const EdgeInsets.all(16,),
+                      child: Center(child: CircularProgressIndicator(),),
+                    );
+                  }
                 },
                 separatorBuilder: (_, __) => SizedBox(height: 8,),
               ),

@@ -25,6 +25,14 @@ class MovieState extends Equatable {
   /// 에러메세지
   final String? errorMessage;
 
+  /// 📄 현재 페이지 번호 (무한 스크롤용)
+  final int currentPage;
+
+  /// ✅ 다음 페이지가 존재하는지 여부
+  final bool hasNextPage;
+
+  /// 🔄 추가 로딩 중 여부 (무한 스크롤 하단 로딩)
+  final bool isFetchingMore;
 
   const MovieState({
     required this.selectedIndex,
@@ -34,6 +42,9 @@ class MovieState extends Equatable {
     required this.isSearching,
     required this.searchResults,
     this.errorMessage,
+    required this.currentPage,
+    required this.hasNextPage,
+    required this.isFetchingMore,
   });
 
   /// 🆕 초기 상태 생성자 (앱 시작 시 기본 상태)
@@ -45,6 +56,9 @@ class MovieState extends Equatable {
       searchQuery: '',
       isSearching: false,
       searchResults: [],
+      currentPage: 1,
+      hasNextPage: true,
+      isFetchingMore: false,
     );
   }
 
@@ -57,6 +71,9 @@ class MovieState extends Equatable {
     bool? isSearching,
     List<Movie>? searchResults,
     String? errorMessage,
+    int? currentPage,
+    bool? hasNextPage,
+    bool? isFetchingMore,
   }) {
     return MovieState(
       selectedIndex: selectedIndex ?? this.selectedIndex,
@@ -66,6 +83,9 @@ class MovieState extends Equatable {
       isSearching: isSearching ?? this.isSearching,
       searchResults: searchResults ?? this.searchResults,
       errorMessage: errorMessage, // ⛔ 명시적으로 전달된 값만 사용
+      currentPage: currentPage ?? this.currentPage,
+      hasNextPage: hasNextPage ?? this.hasNextPage,
+      isFetchingMore: isFetchingMore ?? this.isFetchingMore,
     );
   }
 
@@ -79,5 +99,8 @@ class MovieState extends Equatable {
     selectedIndex,
     isLoading,
     errorMessage,
+    currentPage,
+    hasNextPage,
+    isFetchingMore,
   ];
 }
